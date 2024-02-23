@@ -37,7 +37,7 @@ for region in "${regions[@]}"; do
   terraformer import aws --regions "$region" --resources "$resources" --path-pattern "{output}/{provider}/$region/{service}" --excludes "$excludes" --profile=""
 done
 
-# remove empty tf directories
+# remove empty tf directories: those that contain only provider.tf, variables.tf, and *.tfstate
 generated_dir="generated"
 if [ -d "$generated_dir" ]; then
   tf_dirs=$(find ./ -type f -name "provider.tf" -exec dirname {} \; | sort -u)
