@@ -5,12 +5,13 @@ regions=("us-east-1" "eu-west-1" "ap-southeast-1")
 resources="*"
 excludes="identitystore"
 
+terraformer_version="0.8.24"
+
 # Check if Terraformer is installed
 if ! command -v terraformer &> /dev/null
 then
     echo "Terraformer is not installed. Proceeding with installation..."
-    version=$(curl -s https://api.github.com/repos/GoogleCloudPlatform/terraformer/releases/latest | grep tag_name | cut -d '"' -f 4); 
-    curl -LO "https://github.com/GoogleCloudPlatform/terraformer/releases/download/$version/terraformer-aws-linux-amd64"
+    curl -LO "https://github.com/GoogleCloudPlatform/terraformer/releases/download/$terraformer_version/terraformer-aws-linux-amd64"
     chmod +x terraformer-aws-linux-amd64
     sudo mv terraformer-aws-linux-amd64 /usr/local/bin/terraformer
 else

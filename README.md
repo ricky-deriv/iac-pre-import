@@ -2,8 +2,8 @@
 A script to generate terraform files from existing infrastructure using Terraformer. 
 
 ## Setup
+- ensure the following packages are installed: jq, terraform, docker, terraformer
 - ensure AWS credentials is are added as environment variables.
-- ensure jq package exists.
 
 ## Flow
 - installs Terraformer if not exist
