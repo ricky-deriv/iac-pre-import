@@ -100,7 +100,4 @@ else
 fi
 
 # cleanup
-rm -r .terraform*
-rm config.yaml
-rm exclude.txt
-rm output01.json
+rm -r .terraform* config.yaml exclude.txt output01.json
