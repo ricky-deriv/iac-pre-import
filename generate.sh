@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # inputs
-regions=("us-east-1" "eu-west-1" "ap-southeast-1")
+regions=("us-east-1" "eu-west-1" "ap-southeast-1" "global")
 resources="*"
 excludes="identitystore"
 
@@ -64,11 +64,16 @@ detectors:
       - AKIA
     regex:
       adjective: (?i)AKIA[0-9A-Z]{16}
-  - name: userbase64 attribute
+  - name: userbase64
     keywords:
       - user_data
     regex:
       adjective: \buser_data.*
+  - name: vpn-pre-shared-key
+    keywords:
+      - preshared_key
+    regex:
+      adjective: tunnel[12]_preshared_key
 EOF
 
 printf "\*.tfstate\n.terraform*" > exclude.txt
@@ -78,9 +83,13 @@ docker run --rm -v "$PWD:/path" trufflesecurity/trufflehog:latest filesystem /pa
 if [ -e "output01.json" ]; then
   while IFS= read -r line; do
     file_name="$(echo "$line" | jq -r '.SourceMetadata.Data.Filesystem.file' | sed 's|^/path/||')"
-    if [ "$(echo "$line" | jq -r '.ExtraData.name')" = "certificate authority" ]; then
-      line_number="$(echo "$line" | jq -r '.SourceMetadata.Data.Filesystem.line')"
-      sed -i "${line_number}s/.*/# <redacted>/" "${file_name}"
+    detector_name="$(echo "$line" | jq -r '.ExtraData.name')" 
+    if [[ "$detector_name" = "certificate authority" || "$detector_name" = "vpn-pre-shared-key" || "$detector_name" = "userbase64" ]]; then
+      to_redact="$(echo "$line" | jq -r '.Raw | gsub("/"; "\\/")')"
+      mapfile -t line_numbers < <(grep -n "${to_redact}" "${file_name}" | cut -d: -f1)
+      for line_num in "${line_numbers[@]}"; do
+        sed -i "${line_num}s/.*/# <redacted>/" "${file_name}"
+      done
     else 
       to_redact="$(echo "$line" | jq -r '.Raw | gsub("/"; "\\/")')"
       find "${file_name}" -type f -exec sed -i "s/${to_redact}/# <redacted>/g" {} \;
